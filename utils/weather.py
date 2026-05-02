@@ -1,19 +1,31 @@
 import os
-from dotenv import load_dotenv
 import requests
+import streamlit as st
+from dotenv import load_dotenv
 
+# Load local .env for local machine
 load_dotenv()
 
+# First try local env, then Streamlit secrets
 API_KEY = os.getenv("OPENWEATHER_API_KEY")
+
+if not API_KEY:
+    API_KEY = st.secrets["OPENWEATHER_API_KEY"]
+
+
 def get_weather(city):
     try:
         url = (
-            f"https://api.openweathermap.org/data/2.5/weather?"
-            f"q={city}&appid={API_KEY}&units=metric"
+            "https://api.openweathermap.org/data/2.5/weather"
+            f"?q={city}&appid={API_KEY}&units=metric"
         )
 
         response = requests.get(url, timeout=10)
         data = response.json()
+
+        # Optional: API error handling
+        if "main" not in data:
+            return None
 
         return {
             "temp": data["main"]["temp"],
@@ -21,7 +33,7 @@ def get_weather(city):
             "condition": data["weather"][0]["main"]
         }
 
-    except:
+    except Exception:
         return None
 
 
